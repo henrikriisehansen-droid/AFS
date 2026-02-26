@@ -166,6 +166,13 @@ class App(customtkinter.CTk):
 
     def generate_html(self, payload):
         
+        # payload example data
+        # {
+        # "recipientEmail": "john_doe@domain.com",
+        # "recipientName": "john doe",
+        # "referenceId": "1234567890"
+        # }
+
         # create an HTML string using the payload data
         sds = json.dumps(payload, indent=1)
         html = f"""<html>\n<head>\n<script type='application/json+trustpilot'>\n{sds}\n</script>\n</head>\n<body>\n<p>Hi!<br>\nHow are you?<br>\n</p>\n</body>\n</html>"""
