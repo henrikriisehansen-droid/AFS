@@ -93,13 +93,14 @@ class Menu(customtkinter.CTkFrame):
         
         if data["config"]["sendAfsDirect"] == "on":
 
-            self.to_label.configure(text=f"To: {data["config"]["afs_email"]}")
+            # self.to_label.configure(text=f"To: {data["config"]["afs_email"]}")
+            self.to_label.configure(text=f"To: {data['config']['afs_email']}")
             self.bcc_label.grid_remove()
             
         else:
 
-            self.to_label.configure(text=f"To: {data["settings"]["recipientEmail"]["value"]}")
-            self.bcc_label.configure(text=f"bcc: {data["config"]["afs_email"]}")
+            self.to_label.configure(text=f"To: {data['settings']['recipientEmail']['value']}")
+            self.bcc_label.configure(text=f"bcc: {data['config']['afs_email']}")
             self.bcc_label.grid()
             
         for key, value in kwargs.items():
