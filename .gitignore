@@ -1,5 +1,12 @@
+# Ignore the .gitignore file itself
+.gitignore
+# Ignore the config file
 config.toml
+# Ignore the virtual environment
+.venv/
+venv/
+ENV/
+# Ignore Python cache files
 __pycache__/
 *.py[cod]
-output
-*.pyc
+*$py.class
