@@ -36,6 +36,9 @@ class App(customtkinter.CTk):
         self.element_padx:int = 8
         self.element_pady:int = 8
 
+        customtkinter.set_appearance_mode("dark")
+        customtkinter.set_default_color_theme("dark-blue")   
+
         # Initialize email object and set window properties
         self.email:Email = Email()
         self.title("AFS - validator")
