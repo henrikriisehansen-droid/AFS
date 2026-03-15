@@ -9,6 +9,7 @@ from models.email_service import EmailService
 from views.main_view import MainView
 from views.settings_window import SettingsWindow
 from views.validate_json_window import ValidateJsonWindow
+from views.notification_popup import show_notification
 
 class MainController:
     def __init__(self):
@@ -21,6 +22,9 @@ class MainController:
         # Transient sub-windows
         self.settings_window = None
         self.validate_json_window = None
+        
+        # State tracking for auto-toggles
+        self._last_invitation_type = None
 
         # Build initial payload to ensure preview is right
         self._sync_and_rebuild()
@@ -66,6 +70,36 @@ class MainController:
         if config.get("randomReferenceNumber") == "on" and "referenceId" in settings:
             new_ref = ''.join(random.choices(string.ascii_uppercase + string.digits, k=20))
             settings["referenceId"]["value"] = new_ref
+            
+        # --- Auto-Toggle logic for Invitation Types ---
+        current_invitation_type = config.get("invitation_type")
+        
+        if current_invitation_type != self._last_invitation_type:
+            # We switched types, apply specific field constraints
+            p_type = parse_invitation_type(current_invitation_type)
+            
+            # First, clean slate all product fields to "off"
+            product_fields = [
+                "productUrl", "imageUrl", "name", "sku", "gtin", "mpn", 
+                "brand", "productCategoryGoogleId", "productSkus", 
+                "productReviewInvitationTemplateId"
+            ]
+            for f in product_fields:
+                if f in settings:
+                    settings[f]["checkbox_value"] = "off"
+            
+            # Then enable specific ones based on type
+            if p_type.name == "SERVICE_AND_PRODUCT_REVIEW":
+                for f in ["productUrl", "imageUrl", "name", "sku", "productReviewInvitationTemplateId"]:
+                    if f in settings:
+                        settings[f]["checkbox_value"] = "on"
+            
+            elif p_type.name == "SERVICE_AND_PRODUCT_REVIEW_SKU":
+                for f in ["productSkus", "productReviewInvitationTemplateId"]:
+                    if f in settings:
+                        settings[f]["checkbox_value"] = "on"
+                        
+            self._last_invitation_type = current_invitation_type
             
         # 3. Synchronize payload construction and save
         self._sync_and_rebuild()
@@ -116,10 +150,10 @@ class MainController:
             self.validate_json_window = ValidateJsonWindow(self.main_view, self)
             html_content = self.main_view.email_view.get_content()
             
-            # Extract actual JSON from HTML string for validation
+            # Extract actual JSON from the commented HTML script block
             json_str = ""
-            if "<script type='application/json+trustpilot'>" in html_content:
-                parts = html_content.split("<script type='application/json+trustpilot'>")
+            if '<script type="application/json+trustpilot">' in html_content:
+                parts = html_content.split('<script type="application/json+trustpilot">')
                 if len(parts) > 1:
                     json_str = parts[1].split("</script>")[0].strip()
             
@@ -137,9 +171,42 @@ class MainController:
         self.on_input_changed()
         
         data = self.config_manager.get_config()
+        config = data.get("config", {})
+        settings = data.get("settings", {})
+
+        # --- Validate required settings before attempting send ---
+        missing = []
+        if not config.get("agentmail_api_key", "").strip():
+            missing.append("AgentMail API Key (open Settings)")
+        if not config.get("agentmail_inbox_id", "").strip():
+            missing.append("AgentMail Inbox ID (open Settings)")
+        if not config.get("afs_email", "").strip():
+            missing.append("AFS Email")
+        if config.get("sendAfsDirect") != "on":
+            recipient = settings.get("recipientEmail", {}).get("value", "").strip()
+            if not recipient:
+                missing.append("Recipient Email (enable it in the settings panel)")
+
+        if missing:
+            show_notification(
+                self.main_view,
+                "Cannot send email. The following required values are missing or empty:\n\n• " + "\n• ".join(missing),
+                level="warning"
+            )
+            return
+
         email_service = EmailService(
-            config_data=data.get("config", {}),
-            settings=data.get("settings", {}),
-            html_payload=data.get("payload", {}).get("html", "")
+            config_data=config,
+            settings=settings,
+            html_payload=self.main_view.email_view.get_content()
         )
-        email_service.send_email()
+        success = email_service.send_email()
+
+        if success:
+            show_notification(self.main_view, "Email sent successfully!", level="success")
+        else:
+            show_notification(
+                self.main_view,
+                "Failed to send the email.\nCheck your AgentMail API Key and Inbox ID in Settings, and review the console for details.",
+                level="error"
+            )

@@ -26,14 +26,13 @@ class EmailService:
                 recipient = self.config_data.get('afs_email', '')
                 bcc = None
 
-            # For text format, we attempt a simple text extraction or fallback to string
             print(f"Sending via AgentMail to {recipient} / bcc {bcc} through inbox {inbox_id}...")
             
             client.inboxes.messages.send(
                 inbox_id=inbox_id,
                 to=recipient,
                 subject=email_subject,
-                text="Please see the HTML content of this email.",
+                text=self.html_payload,
                 html=self.html_payload,
                 bcc=bcc if bcc else None
             )

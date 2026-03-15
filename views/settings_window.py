@@ -23,6 +23,12 @@ class SettingsWindow(customtkinter.CTkToplevel):
         self.attributes("-topmost", True) 
         self.protocol("WM_DELETE_WINDOW", self.close_window)
 
+        # Centre on parent
+        self.update_idletasks()
+        px = parent.winfo_rootx() + parent.winfo_width() // 2 - 200
+        py = parent.winfo_rooty() + parent.winfo_height() // 2 - 175
+        self.geometry(f"+{px}+{py}")
+
     def close_window(self):
         self.controller.close_settings()
         self.destroy()

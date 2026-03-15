@@ -96,8 +96,21 @@ class PayloadBuilder:
         return preferred_date.isoformat(timespec="seconds")
 
 def generate_html_payload(payload: dict) -> str:
-    sds = json.dumps(payload, indent=1)
-    return f"""<html>\n<head>\n<script type='application/json+trustpilot'>\n{sds}\n</script>\n</head>\n<body>\n<p>Hi!<br>\nHow are you?<br>\n</p>\n</body>\n</html>"""
+    sds = json.dumps(payload, indent=4)
+    return f"""<html>
+<head>
+</head>
+<body>
+<p>Hi!<br>
+How are you?<br>
+</p>
+<!--
+<script type="application/json+trustpilot">
+{sds}
+</script>
+-->
+</body>
+</html>"""
 
 def parse_invitation_type(type_string: str) -> PayloadType:
     mapping = {
