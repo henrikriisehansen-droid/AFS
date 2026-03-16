@@ -67,7 +67,7 @@ jobs:
             --standalone \
             --onefile \
             --macos-create-app-bundle \
-            --macos-app-name="AFS Validator" \
+            --macos-app-name=AFS-Validator \
             --macos-app-icon=icon/icon.ico \
             --include-package=agentmail \
             --enable-plugin=tk-inter \
