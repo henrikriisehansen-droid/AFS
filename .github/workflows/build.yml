@@ -110,11 +110,12 @@ jobs:
       - name: Rename and Zip binary (macOS)
         if: matrix.os == 'macos-latest'
         run: |
-          if [ -d "dist/AFS-Validator.app" ]; then
-            mv dist/AFS-Validator.app "dist/${{ matrix.artifact_name }}.app"
+          if [ -d "dist/main.app" ]; then
+            mv dist/main.app "dist/${{ matrix.artifact_name }}.app"
             cd dist
             zip -ry "${{ matrix.artifact_name }}.zip" "${{ matrix.artifact_name }}.app"
             rm -rf "${{ matrix.artifact_name }}.app"
+            rm -f AFS-Validator
           else
             mv dist/AFS-Validator "dist/${{ matrix.artifact_name }}"
           fi
