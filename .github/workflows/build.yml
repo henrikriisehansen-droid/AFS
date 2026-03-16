@@ -107,10 +107,17 @@ jobs:
             --output-dir=dist \
             main.py
 
-      # ── Rename output to platform-specific artifact name ──────────────────
-      - name: Rename binary (macOS)
+      - name: Rename and Zip binary (macOS)
         if: matrix.os == 'macos-latest'
-        run: mv dist/AFS-Validator.app "dist/${{ matrix.artifact_name }}.app" || mv dist/AFS-Validator "dist/${{ matrix.artifact_name }}"
+        run: |
+          if [ -d "dist/AFS-Validator.app" ]; then
+            mv dist/AFS-Validator.app "dist/${{ matrix.artifact_name }}.app"
+            cd dist
+            zip -ry "${{ matrix.artifact_name }}.zip" "${{ matrix.artifact_name }}.app"
+            rm -rf "${{ matrix.artifact_name }}.app"
+          else
+            mv dist/AFS-Validator "dist/${{ matrix.artifact_name }}"
+          fi
 
       - name: Rename binary (Windows)
         if: matrix.os == 'windows-latest'
