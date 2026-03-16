@@ -69,6 +69,7 @@ jobs:
             --macos-create-app-bundle \
             --macos-app-name="AFS Validator" \
             --macos-app-icon=icon/icon.ico \
+            --include-package=agentmail \
             --enable-plugin=tk-inter \
             --include-data-dir=icon=icon \
             --output-filename=AFS-Validator \
@@ -85,6 +86,7 @@ jobs:
             --onefile ^
             --windows-console-mode=disable ^
             --windows-icon-from-ico=icon\icon.ico ^
+            --include-package=agentmail ^
             --enable-plugin=tk-inter ^
             --include-data-dir=icon=icon ^
             --output-filename=AFS-Validator ^
@@ -98,6 +100,7 @@ jobs:
           python -m nuitka \
             --standalone \
             --onefile \
+            --include-package=agentmail \
             --enable-plugin=tk-inter \
             --include-data-dir=icon=icon \
             --output-filename=AFS-Validator \
