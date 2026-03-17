@@ -70,6 +70,9 @@ jobs:
             --macos-app-name=AFS-Validator \
             --macos-app-icon=icon/icon.ico \
             --include-package=agentmail \
+            --include-module=agentmail.client \
+            --include-module=agentmail.inboxes.client \
+            --include-module=agentmail.inboxes.messages.client \
             --enable-plugin=tk-inter \
             --include-data-dir=icon=icon \
             --output-filename=AFS-Validator \
@@ -87,6 +90,9 @@ jobs:
             --windows-console-mode=disable ^
             --windows-icon-from-ico=icon\icon.ico ^
             --include-package=agentmail ^
+            --include-module=agentmail.client ^
+            --include-module=agentmail.inboxes.client ^
+            --include-module=agentmail.inboxes.messages.client ^
             --enable-plugin=tk-inter ^
             --include-data-dir=icon=icon ^
             --output-filename=AFS-Validator ^
@@ -101,6 +107,9 @@ jobs:
             --standalone \
             --onefile \
             --include-package=agentmail \
+            --include-module=agentmail.client \
+            --include-module=agentmail.inboxes.client \
+            --include-module=agentmail.inboxes.messages.client \
             --enable-plugin=tk-inter \
             --include-data-dir=icon=icon \
             --output-filename=AFS-Validator \
