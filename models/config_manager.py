@@ -1,9 +1,25 @@
 import toml
 import os
+import sys
 
 class ConfigManager:
-    def __init__(self, config_path: str = "config.toml"):
-        self.config_path = config_path
+    def __init__(self, config_filename: str = "config.toml"):
+        # Resolve path relative to executable if frozen, or relative to script if not
+        if getattr(sys, 'frozen', False):
+            # If it's a bundle, the executable is in Contents/MacOS/
+            # and we might want the config next to the .app or inside?
+            # Usually, next to the .app is better for "portable" apps.
+            # But inside the .app/Contents/Resources is for fixed data.
+            # Let's go with the directory containing the .app (or the exe).
+            exec_dir = os.path.dirname(sys.executable)
+            if '.app/Contents/MacOS' in exec_dir:
+                # Go up to the directory containing the .app
+                self.config_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(exec_dir))), config_filename)
+            else:
+                self.config_path = os.path.join(exec_dir, config_filename)
+        else:
+            self.config_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), config_filename)
+        
         self.data = None
 
         if not os.path.exists(self.config_path):
