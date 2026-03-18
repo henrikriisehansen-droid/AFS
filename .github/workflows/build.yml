@@ -92,30 +92,40 @@ jobs:
             main.py
 
       # ── Post-Build Processing ─────────────────────────────────────────────
-      - name: Rename and Zip binary (macOS)
+      - name: Post-Build — macOS
         if: matrix.os == 'macos-latest'
         run: |
-          mv dist/AFS-Validator.app "dist/${{ matrix.artifact_name }}.app"
+          cp config.toml dist/config.toml
           cd dist
-          zip -ry "${{ matrix.artifact_name }}.zip" "${{ matrix.artifact_name }}.app"
-          rm -rf "${{ matrix.artifact_name }}.app"
-          rm -rf AFS-Validator
+          zip -ry "${{ matrix.artifact_name }}.zip" AFS-Validator.app AFS-Validator config.toml
+          # Clean up everything except the zip
+          find . -maxdepth 1 ! -name "${{ matrix.artifact_name }}.zip" ! -name "." -exec rm -rf {} +
 
-      - name: Rename binary (Windows)
+      - name: Post-Build — Windows
         if: matrix.os == 'windows-latest'
         shell: pwsh
-        run: Move-Item dist/AFS-Validator.exe "dist/${{ matrix.artifact_name }}"
+        run: |
+          Copy-Item config.toml dist/config.toml
+          cd dist
+          Compress-Archive -Path AFS-Validator.exe, config.toml -DestinationPath "${{ matrix.artifact_name }}.zip"
+          # Clean up everything except the zip
+          Get-ChildItem -Exclude "${{ matrix.artifact_name }}.zip" | Remove-Item -Recurse -Force
 
-      - name: Rename binary (Linux)
+      - name: Post-Build — Linux
         if: matrix.os == 'ubuntu-latest'
-        run: mv dist/AFS-Validator "dist/${{ matrix.artifact_name }}"
+        run: |
+          cp config.toml dist/config.toml
+          cd dist
+          zip -rj "${{ matrix.artifact_name }}.zip" AFS-Validator config.toml
+          # Clean up everything except the zip
+          find . -maxdepth 1 ! -name "${{ matrix.artifact_name }}.zip" ! -name "." -exec rm -rf {} +
 
       # ── Upload build artifact ─────────────────────────────────────────────
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact_name }}
-          path: dist/${{ matrix.artifact_name }}*
+          path: dist/${{ matrix.artifact_name }}.zip
           if-no-files-found: error
 
       # ── Attach to GitHub Release (only on tag push) ───────────────────────
@@ -123,4 +133,4 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/${{ matrix.artifact_name }}*
+          files: dist/${{ matrix.artifact_name }}.zip
