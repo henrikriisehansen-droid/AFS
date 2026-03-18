@@ -32,12 +32,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # ── Python ────────────────────────────────────────────────────────────
+      # ── Python & uv ───────────────────────────────────────────────────────
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
-          cache: pip
+          python-version: "3.12"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
 
       # ── Linux system deps (Tk + C compiler) ───────────────────────────────
       - name: Install Linux system dependencies
@@ -46,37 +50,21 @@ jobs:
           sudo apt-get update -y
           sudo apt-get install -y python3-tk tk-dev patchelf ccache
 
-      # ── Windows C compiler (already available via MSVC) ───────────────────
-      # Nothing extra needed — GitHub's windows-latest runner ships MSVC.
-
-      # ── macOS C compiler ──────────────────────────────────────────────────
-      # Xcode CLT already present on macos-latest runners.
-
-      # ── Python deps + Nuitka ──────────────────────────────────────────────
+      # ── Python deps ───────────────────────────────────────────────────────
       - name: Install Python dependencies
         run: |
-          pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install "nuitka[onefile]" imageio
+          uv sync
 
       # ── Build (macOS) ─────────────────────────────────────────────────────
       - name: Build — macOS
         if: matrix.os == 'macos-latest'
         run: |
-          python -m nuitka \
-            --standalone \
-            --onefile \
-            --macos-create-app-bundle \
-            --macos-app-name=AFS-Validator \
-            --macos-app-icon=icon/icon.ico \
-            --include-package=agentmail \
-            --include-module=agentmail.client \
-            --include-module=agentmail.inboxes.client \
-            --include-module=agentmail.inboxes.messages.client \
-            --enable-plugin=tk-inter \
-            --include-data-dir=icon=icon \
-            --output-filename=AFS-Validator \
-            --output-dir=dist \
+          uv run pyinstaller --noconfirm --onedir --windowed --argv-emulation \
+            --name "AFS-Validator" \
+            --icon "icon/icon.icns" \
+            --add-data "icon:icon" \
+            --collect-all agentmail \
+            --collect-all customtkinter \
             main.py
 
       # ── Build (Windows) ───────────────────────────────────────────────────
@@ -84,55 +72,39 @@ jobs:
         if: matrix.os == 'windows-latest'
         shell: cmd
         run: |
-          python -m nuitka ^
-            --standalone ^
-            --onefile ^
-            --windows-console-mode=disable ^
-            --windows-icon-from-ico=icon\icon.ico ^
-            --include-package=agentmail ^
-            --include-module=agentmail.client ^
-            --include-module=agentmail.inboxes.client ^
-            --include-module=agentmail.inboxes.messages.client ^
-            --enable-plugin=tk-inter ^
-            --include-data-dir=icon=icon ^
-            --output-filename=AFS-Validator ^
-            --output-dir=dist ^
+          uv run pyinstaller --noconfirm --onefile --windowed ^
+            --name "AFS-Validator" ^
+            --icon "icon/icon.ico" ^
+            --add-data "icon;icon" ^
+            --collect-all agentmail ^
+            --collect-all customtkinter ^
             main.py
 
       # ── Build (Linux) ─────────────────────────────────────────────────────
       - name: Build — Linux
         if: matrix.os == 'ubuntu-latest'
         run: |
-          python -m nuitka \
-            --standalone \
-            --onefile \
-            --include-package=agentmail \
-            --include-module=agentmail.client \
-            --include-module=agentmail.inboxes.client \
-            --include-module=agentmail.inboxes.messages.client \
-            --enable-plugin=tk-inter \
-            --include-data-dir=icon=icon \
-            --output-filename=AFS-Validator \
-            --output-dir=dist \
+          uv run pyinstaller --noconfirm --onefile \
+            --name "AFS-Validator" \
+            --add-data "icon:icon" \
+            --collect-all agentmail \
+            --collect-all customtkinter \
             main.py
 
+      # ── Post-Build Processing ─────────────────────────────────────────────
       - name: Rename and Zip binary (macOS)
         if: matrix.os == 'macos-latest'
         run: |
-          if [ -d "dist/main.app" ]; then
-            mv dist/main.app "dist/${{ matrix.artifact_name }}.app"
-            cd dist
-            zip -ry "${{ matrix.artifact_name }}.zip" "${{ matrix.artifact_name }}.app"
-            rm -rf "${{ matrix.artifact_name }}.app"
-            rm -f AFS-Validator
-          else
-            mv dist/AFS-Validator "dist/${{ matrix.artifact_name }}"
-          fi
+          mv dist/AFS-Validator.app "dist/${{ matrix.artifact_name }}.app"
+          cd dist
+          zip -ry "${{ matrix.artifact_name }}.zip" "${{ matrix.artifact_name }}.app"
+          rm -rf "${{ matrix.artifact_name }}.app"
+          rm -f AFS-Validator
 
       - name: Rename binary (Windows)
         if: matrix.os == 'windows-latest'
         shell: pwsh
-        run: Move-Item dist\AFS-Validator.exe "dist\${{ matrix.artifact_name }}"
+        run: Move-Item dist/AFS-Validator.exe "dist/${{ matrix.artifact_name }}"
 
       - name: Rename binary (Linux)
         if: matrix.os == 'ubuntu-latest'
@@ -143,7 +115,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact_name }}
-          path: dist/${{ matrix.artifact_name }}*   # the * catches .app bundles too
+          path: dist/${{ matrix.artifact_name }}*
           if-no-files-found: error
 
       # ── Attach to GitHub Release (only on tag push) ───────────────────────
