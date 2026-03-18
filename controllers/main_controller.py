@@ -25,12 +25,23 @@ class MainController:
         
         # State tracking for auto-toggles
         self._last_invitation_type = None
+        self._save_timer = None
 
         # Build initial payload to ensure preview is right
         self._sync_and_rebuild()
 
     def run(self):
         self.main_view.mainloop()
+
+    def on_closing(self):
+        """Handle clean application shutdown."""
+        # Force a final save before exit
+        data = self.config_manager.get_config()
+        self.config_manager.save_config(data)
+        
+        # Destroy windows and exit
+        self.main_view.destroy()
+        sys.exit(0)
 
     # --- Controller Actions (Triggered by Views) ---
 
@@ -123,8 +134,11 @@ class MainController:
         
         data.setdefault("payload", {})["html"] = html_content
         
-        # Save to disk
-        self.config_manager.save_config(data)
+        # Debounced save to disk (avoids excessive writes on rapid typing)
+        if hasattr(self, '_save_timer') and self._save_timer:
+            self.main_view.after_cancel(self._save_timer)
+        
+        self._save_timer = self.main_view.after(500, lambda: self.config_manager.save_config(data))
         
         # Update View to reflect new model state
         self.main_view.update_components(data)

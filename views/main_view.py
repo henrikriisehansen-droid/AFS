@@ -47,8 +47,8 @@ class MainView(customtkinter.CTk):
             data.get("productTemplates", {})
         )
 
-        # Base bindings
-        self.bind("<KeyRelease>", lambda event: self.controller.on_input_changed())
+        # Protocol and bindings
+        self.protocol("WM_DELETE_WINDOW", self.controller.on_closing)
         
         # Initial updates
         self.update_components(data)
