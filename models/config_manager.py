@@ -7,16 +7,24 @@ class ConfigManager:
         # Resolve path relative to executable if frozen, or relative to script if not
         if getattr(sys, 'frozen', False):
             # If it's a bundle, the executable is in Contents/MacOS/
-            # and we might want the config next to the .app or inside?
-            # Usually, next to the .app is better for "portable" apps.
-            # But inside the .app/Contents/Resources is for fixed data.
-            # Let's go with the directory containing the .app (or the exe).
             exec_dir = os.path.dirname(sys.executable)
+            
+            # Check if we are inside a .app bundle
             if '.app/Contents/MacOS' in exec_dir:
-                # Go up to the directory containing the .app
-                self.config_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(exec_dir))), config_filename)
+                # Portable mode: Look next to the .app bundle
+                base_dir = os.path.dirname(os.path.dirname(os.path.dirname(exec_dir)))
             else:
-                self.config_path = os.path.join(exec_dir, config_filename)
+                # Single binary mode: Look next to the binary
+                base_dir = exec_dir
+                
+            # Fallback for translocated apps (sandboxed to a read-only temp path)
+            # or if the base_dir is truly unwritable.
+            if "/AppTranslocation/" in base_dir or not os.access(base_dir, os.W_OK):
+                # Use User's home directory for config if the app is sandboxed/read-only
+                self.config_path = os.path.expanduser(f"~/.afs-validator/{config_filename}")
+                os.makedirs(os.path.dirname(self.config_path), exist_ok=True)
+            else:
+                self.config_path = os.path.join(base_dir, config_filename)
         else:
             self.config_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), config_filename)
         
