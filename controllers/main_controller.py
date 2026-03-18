@@ -35,6 +35,9 @@ class MainController:
 
     def on_closing(self):
         """Handle clean application shutdown."""
+        # Ensure latest UI state is pulled into the model before saving
+        self.on_input_changed()
+        
         # Force a final save before exit
         data = self.config_manager.get_config()
         self.config_manager.save_config(data)
