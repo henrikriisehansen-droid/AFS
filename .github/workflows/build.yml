@@ -99,7 +99,7 @@ jobs:
           cd dist
           zip -ry "${{ matrix.artifact_name }}.zip" "${{ matrix.artifact_name }}.app"
           rm -rf "${{ matrix.artifact_name }}.app"
-          rm -f AFS-Validator
+          rm -rf AFS-Validator
 
       - name: Rename binary (Windows)
         if: matrix.os == 'windows-latest'
