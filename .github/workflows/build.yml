@@ -96,6 +96,7 @@ jobs:
         if: matrix.os == 'macos-latest'
         run: |
           cp config.example.toml dist/config.toml
+          chmod +x dist/AFS-Validator.app/Contents/MacOS/AFS-Validator
           cd dist
           zip -ry "${{ matrix.artifact_name }}.zip" AFS-Validator.app AFS-Validator config.toml
           # Clean up everything except the zip
@@ -115,6 +116,7 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: |
           cp config.example.toml dist/config.toml
+          chmod +x dist/AFS-Validator
           cd dist
           zip -rj "${{ matrix.artifact_name }}.zip" AFS-Validator config.toml
           # Clean up everything except the zip
