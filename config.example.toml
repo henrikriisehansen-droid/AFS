@@ -1,0 +1,45 @@
+[config]
+afs_email = "your-email@example.com"
+email_subject = "Invitation"
+bcc_email = ""
+invitation_type = "Service & Product Review"
+smtp_server = "smtp.gmail.com"
+smtp_port = "587"
+smtp_password = "YOUR_SMTP_PASSWORD"
+smtp_sender_email = "your-sender@gmail.com"
+sendAfsDirect = "on"
+randomReferenceNumber = "on"
+agentmail_api_key = "YOUR_AGENTMAIL_API_KEY"
+agentmail_inbox_id = "your-inbox@agentmail.to"
+
+[locale]
+en-US = "www.trustpilot.com"
+# ... other locales ...
+
+[templates]
+"English - Service reviews" = "529c0abfefb96008b894ad02"
+# ... other templates ...
+
+[productTemplates]
+"English - Optimized for product reviews" = "5c17c7ebb565bb0001046fbd"
+# ... other product templates ...
+
+[payload]
+html = "<html><body><p>Hi!</p></body></html>"
+text = "Hi! Please see the details below."
+
+[settings.recipientEmail]
+type = "entry"
+label = "Recipient Email"
+checkbox_value = "on"
+value = ""
+basePayload = true
+
+[settings.recipientName]
+type = "entry"
+label = "Recipient Name"
+checkbox_value = "on"
+value = ""
+basePayload = true
+
+# ... other settings ...

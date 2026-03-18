@@ -95,7 +95,7 @@ jobs:
       - name: Post-Build — macOS
         if: matrix.os == 'macos-latest'
         run: |
-          cp config.toml dist/config.toml
+          cp config.example.toml dist/config.toml
           cd dist
           zip -ry "${{ matrix.artifact_name }}.zip" AFS-Validator.app AFS-Validator config.toml
           # Clean up everything except the zip
@@ -105,7 +105,7 @@ jobs:
         if: matrix.os == 'windows-latest'
         shell: pwsh
         run: |
-          Copy-Item config.toml dist/config.toml
+          Copy-Item config.example.toml dist/config.toml
           cd dist
           Compress-Archive -Path AFS-Validator.exe, config.toml -DestinationPath "${{ matrix.artifact_name }}.zip"
           # Clean up everything except the zip
@@ -114,7 +114,7 @@ jobs:
       - name: Post-Build — Linux
         if: matrix.os == 'ubuntu-latest'
         run: |
-          cp config.toml dist/config.toml
+          cp config.example.toml dist/config.toml
           cd dist
           zip -rj "${{ matrix.artifact_name }}.zip" AFS-Validator config.toml
           # Clean up everything except the zip
