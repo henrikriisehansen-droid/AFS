@@ -35,15 +35,45 @@ class MainController:
 
     def on_closing(self):
         """Handle clean application shutdown."""
-        # Ensure latest UI state is pulled into the model before saving
-        self.on_input_changed()
-        
-        # Force a final save before exit
-        data = self.config_manager.get_config()
-        self.config_manager.save_config(data)
-        
-        # Destroy windows and exit
+        # 1. Cancel any pending saves
+        if hasattr(self, '_save_timer') and self._save_timer:
+            try:
+                self.main_view.after_cancel(self._save_timer)
+            except Exception:
+                pass
+            self._save_timer = None
+
+        # 2. Ensure latest UI state is pulled into the model and saved SYNC
+        try:
+            # Manually pull state to avoid triggering more 'after' calls
+            data = self.config_manager.get_config()
+            
+            # Pull from Menu View
+            menu_state = self.main_view.menu_view.get_state()
+            data["config"]["afs_email"] = menu_state["afs_email"]
+            data["config"]["invitation_type"] = menu_state["invitation_type"]
+            
+            # Pull from Settings View
+            settings_state = self.main_view.settings_view.get_state()
+            for key, val_dict in settings_state.items():
+                if key in data.get("settings", {}):
+                    data["settings"][key]["checkbox_value"] = val_dict["checkbox_value"]
+                    data["settings"][key]["value"] = val_dict["value"]
+
+            self.config_manager.save_config(data)
+        except Exception as e:
+            print(f"Error during final save: {e}")
+
+        # 3. Graceful Tkinter shutdown
+        # quit() stops the mainloop, destroy() kills the widgets
+        self.main_view.quit()
         self.main_view.destroy()
+        
+        # Use os._exit to force-kill any lingering threads if necessary, 
+        # but sys.exit is usually safer for cleanup.
+        # However, for intermittent crashes on exit, sometimes os._exit is more reliable.
+        # Let's try sys.exit first.
+        import sys
         sys.exit(0)
 
     # --- Controller Actions (Triggered by Views) ---
