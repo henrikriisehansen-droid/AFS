@@ -1,0 +1,12 @@
+# uv configuration file
+[project]
+# Use the local .venv for this project
+link-mode = "symlink"
+native-tls = true
+
+[build]
+# Optional build settings
+
+[pip]
+# If using pip-style commands, default to the local .venv
+no-cache = false

@@ -1,0 +1,8 @@
+{
+    "python.defaultInterpreterPath": ".venv/bin/python",
+    "python.terminal.activateEnvInSelectedTerminal": true,
+    "python.analysis.extraPaths": [
+        "."
+    ],
+    "python.analysis.typeCheckingMode": "basic"
+}
