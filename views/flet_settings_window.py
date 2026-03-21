@@ -9,22 +9,26 @@ class FletSettingsWindow:
             label="AgentMail API Key",
             value=config_data.get("agentmail_api_key", ""),
             password=True,
-            can_reveal_password=True
+            can_reveal_password=True,
+            focused_border_color="#58A6FF",
         )
         
         self.inbox_id_field = ft.TextField(
             label="AgentMail Inbox ID",
-            value=config_data.get("agentmail_inbox_id", "")
+            value=config_data.get("agentmail_inbox_id", ""),
+            focused_border_color="#58A6FF",
         )
         
         self.send_afs_direct_switch = ft.Switch(
             label="Send AFS Direct",
-            value=config_data.get("sendAfsDirect") == "on"
+            value=config_data.get("sendAfsDirect") == "on",
+            active_color="#58A6FF",
         )
         
         self.random_ref_switch = ft.Switch(
             label="Random Reference Number",
-            value=config_data.get("randomReferenceNumber") == "on"
+            value=config_data.get("randomReferenceNumber") == "on",
+            active_color="#58A6FF",
         )
 
         self.dialog = ft.AlertDialog(
@@ -47,8 +51,8 @@ class FletSettingsWindow:
                 width=400,
             ),
             actions=[
-                ft.TextButton("Save & Close", on_click=self.save_and_close),
-                ft.TextButton("Cancel", on_click=lambda _: self.controller.close_settings()),
+                ft.TextButton("Save & Close", on_click=self.save_and_close, style=ft.ButtonStyle(color="#58A6FF")),
+                ft.TextButton("Cancel", on_click=lambda _: self.controller.close_settings(), style=ft.ButtonStyle(color=ft.colors.GREY_400)),
             ],
             actions_alignment=ft.MainAxisAlignment.END,
         )

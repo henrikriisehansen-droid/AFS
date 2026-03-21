@@ -51,7 +51,7 @@ class FletSettingsView(ft.UserControl):
                     on_change=lambda _: self.controller.on_input_changed(),
                     visible=checkbox_value,
                     border_color="#30363D",
-                    focused_border_color="#1F6FEB",
+                    focused_border_color="#58A6FF",
                 )
             else: # entry
                 field_control = ft.TextField(

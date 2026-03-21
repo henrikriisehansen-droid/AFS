@@ -32,8 +32,8 @@ class FletValidateJsonWindow:
             icon=ft.icons.CHECK_CIRCLE,
             on_click=lambda _: self.perform_validation(),
             style=ft.ButtonStyle(
-                color=ft.colors.WHITE,
-                bgcolor=ft.colors.BLUE_700,
+                color="#FFFFFF",
+                bgcolor="#1F6FEB", # GitHub primary blue
                 shape=ft.RoundedRectangleBorder(radius=6),
             ),
             width=500, # Fill left column width
@@ -86,7 +86,7 @@ class FletValidateJsonWindow:
                 height=600,
             ),
             actions=[
-                ft.TextButton("Close", on_click=lambda _: self.controller.close_validate_json()),
+                ft.TextButton("Close", on_click=lambda _: self.controller.close_validate_json(), style=ft.ButtonStyle(color="#58A6FF")),
             ],
             actions_alignment=ft.MainAxisAlignment.END,
         )

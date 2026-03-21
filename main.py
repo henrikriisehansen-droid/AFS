@@ -25,7 +25,7 @@ if __name__ == "__main__":
         
         # Use a modern font if possible (Flet handles system fonts well)
         page.theme = ft.Theme(
-            color_scheme_seed=ft.colors.BLUE,
+            color_scheme_seed="#1F6FEB",
         )
         
         try:

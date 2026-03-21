@@ -11,7 +11,7 @@ class FletMenuView(ft.UserControl):
             label="AFS email:",
             hint_text="AFS email",
             border_color="#30363D",
-            focused_border_color="#1F6FEB",
+            focused_border_color="#58A6FF",
             on_change=lambda _: self.controller.on_input_changed()
         )
         
@@ -23,7 +23,7 @@ class FletMenuView(ft.UserControl):
                 ft.dropdown.Option("Service & Product Review(add/update Product Review)"),
             ],
             border_color="#30363D",
-            focused_border_color="#1F6FEB",
+            focused_border_color="#58A6FF",
             on_change=lambda _: self.controller.on_input_changed(),
             text_size=12,
         )
@@ -35,12 +35,23 @@ class FletMenuView(ft.UserControl):
         self.validate_json_btn = ft.ElevatedButton(
             "Validate JSON", 
             icon=ft.icons.CODE,
-            on_click=lambda _: self.controller.open_validate_json()
+            on_click=lambda _: self.controller.open_validate_json(),
+            style=ft.ButtonStyle(
+                color="#FFFFFF",
+                bgcolor="#1F6FEB", # GitHub primary blue
+                shape=ft.RoundedRectangleBorder(radius=6),
+            )
         )
         self.settings_btn = ft.ElevatedButton(
             "Settings", 
             icon=ft.icons.SETTINGS,
-            on_click=lambda _: self.controller.open_settings()
+            on_click=lambda _: self.controller.open_settings(),
+            style=ft.ButtonStyle(
+                color="#58A6FF",
+                bgcolor=ft.colors.TRANSPARENT,
+                side=ft.BorderSide(1, "#30363D"),
+                shape=ft.RoundedRectangleBorder(radius=6),
+            )
         )
         self.send_email_btn = ft.ElevatedButton(
             "Send Email", 
