@@ -24,11 +24,13 @@ class FletMenuView(ft.UserControl):
             ],
             border_color="#30363D",
             focused_border_color="#1F6FEB",
-            on_change=lambda _: self.controller.on_input_changed()
+            on_change=lambda _: self.controller.on_input_changed(),
+            text_size=12,
         )
         
-        self.to_label = ft.Text("To: ", weight=ft.FontWeight.BOLD)
-        self.bcc_label = ft.Text("bcc: ", weight=ft.FontWeight.BOLD)
+        self.to_label = ft.Text("To: ", weight=ft.FontWeight.BOLD, no_wrap=False, size=13)
+        self.bcc_label = ft.Text("bcc: ", size=11, color=ft.colors.GREY_400, no_wrap=False)
+        self.invitation_type_hint = ft.Text("", size=11, color=ft.colors.GREY_500, italic=True)
         
         self.validate_json_btn = ft.ElevatedButton(
             "Validate JSON", 
@@ -65,10 +67,11 @@ class FletMenuView(ft.UserControl):
                                 controls=[
                                     self.to_label,
                                     self.bcc_label,
+                                    self.invitation_type_hint,
                                 ],
                                 spacing=5
                             ),
-                            padding=ft.padding.only(left=5)
+                            padding=ft.padding.only(left=5, top=5)
                         ),
                     ],
                     spacing=10,
@@ -96,15 +99,19 @@ class FletMenuView(ft.UserControl):
     
     def update_view(self, config_data: dict, settings_data: dict):
         self.afs_email_entry.value = config_data.get("afs_email", "")
-        self.combobox.value = config_data.get("invitation_type", "Service Review")
+        self.combobox.value = config_data.get("invitation_type", "Service review")
+        self.invitation_type_hint.value = f"Mode: {self.combobox.value}"
         
         if config_data.get("sendAfsDirect") == "on":
             self.to_label.value = f"To: {config_data.get('afs_email', '')}"
+            self.to_label.color = ft.colors.BLUE_400
             self.bcc_label.visible = False
         else:
-            recipient = settings_data.get('recipientEmail', {}).get('value', '')
+            recipient = settings_data.get('recipientEmail', {}).get('value', '...')
             self.to_label.value = f"To: {recipient}"
+            self.to_label.color = None
             self.bcc_label.value = f"bcc: {config_data.get('afs_email', '')}"
             self.bcc_label.visible = True
         
-        self.update()
+        if self.page:
+            self.update()

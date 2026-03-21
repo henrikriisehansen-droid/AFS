@@ -34,7 +34,8 @@ class FletEmailView(ft.UserControl):
 
     def set_content(self, html_content: str):
         self.email_body.value = html_content
-        self.update()
+        if self.page:
+            self.update()
         
     def get_content(self) -> str:
         return self.email_body.value

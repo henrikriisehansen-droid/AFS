@@ -38,9 +38,9 @@ class FletView(ft.UserControl):
 
         return ft.Row(
             controls=[
-                panel_container(self.menu_view, 1),
-                panel_container(self.email_view, 2),
-                panel_container(self.settings_view, 1),
+                panel_container(self.menu_view, 2),
+                panel_container(self.email_view, 3),
+                panel_container(self.settings_view, 2),
             ],
             expand=True,
             vertical_alignment=ft.CrossAxisAlignment.STRETCH,

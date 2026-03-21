@@ -6,6 +6,7 @@ import flet as ft
 from models.config_manager import ConfigManager
 from models.payload_builder import PayloadBuilder, generate_html_payload, parse_invitation_type
 from models.email_service import EmailService
+from models.json_validator import validate_json_string
 
 from views.flet_view import FletView
 import threading
@@ -136,6 +137,12 @@ class MainController:
                         
             self._last_invitation_type = current_invitation_type
             
+        # --- Handle Send AFS Direct toggle ---
+        if config.get("sendAfsDirect") == "on":
+            # In direct mode, recipientEmail is required to be in the JSON
+            if "recipientEmail" in settings:
+                settings["recipientEmail"]["checkbox_value"] = "on"
+                
         # 3. Synchronize payload construction and save
         self._sync_and_rebuild()
 
@@ -216,6 +223,10 @@ class MainController:
         if self.page.dialog:
             self.page.dialog.open = False
         self.page.update()
+
+    def validate_json(self, json_str: str) -> tuple[bool, str]:
+        """Validate a JSON string using the model layer."""
+        return validate_json_string(json_str)
 
     # --- Email Execution ---
 

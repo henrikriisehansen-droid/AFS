@@ -141,6 +141,7 @@ class FletSettingsView(ft.UserControl):
                     # Also update the inner container's visibility
                     field_group['container'].content.controls[1].visible = new_cb
             
-            self.update()
+            if self.page:
+                self.update()
         finally:
             self._updating = False
