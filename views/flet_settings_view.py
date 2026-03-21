@@ -51,7 +51,7 @@ class FletSettingsView(ft.UserControl):
                     on_change=lambda _: self.controller.on_input_changed(),
                     visible=checkbox_value,
                     border_color="#30363D",
-                    focused_border_color="#58A6FF",
+                    focused_border_color="#90CAF9",
                 )
             else: # entry
                 field_control = ft.TextField(
@@ -59,7 +59,7 @@ class FletSettingsView(ft.UserControl):
                     on_change=lambda _: self.controller.on_input_changed(),
                     visible=checkbox_value,
                     border_color="#30363D",
-                    focused_border_color="#1F6FEB",
+                    focused_border_color="#90CAF9",
                 )
 
             self.fields[key] = {
@@ -93,7 +93,7 @@ class FletSettingsView(ft.UserControl):
 
         return ft.Column(
             controls=[
-                ft.Text("Parameters", size=24, weight=ft.FontWeight.BOLD, color="#58A6FF"),
+                ft.Text("Parameters", size=24, weight=ft.FontWeight.BOLD, color=ft.colors.PRIMARY),
                 ft.Column(
                     controls=settings_controls,
                     scroll=ft.ScrollMode.AUTO,
@@ -140,6 +140,9 @@ class FletSettingsView(ft.UserControl):
                     field_group['container'].border = ft.border.all(1, "#30363D") if new_cb else None
                     # Also update the inner container's visibility
                     field_group['container'].content.controls[1].visible = new_cb
+
+                # Update disabled state
+                field_group['checkbox'].disabled = cfg.get("disabled", False)
             
             if self.page:
                 self.update()

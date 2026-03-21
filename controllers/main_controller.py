@@ -138,10 +138,13 @@ class MainController:
             self._last_invitation_type = current_invitation_type
             
         # --- Handle Send AFS Direct toggle ---
-        if config.get("sendAfsDirect") == "on":
-            # In direct mode, recipientEmail is required to be in the JSON
-            if "recipientEmail" in settings:
+        if "recipientEmail" in settings:
+            if config.get("sendAfsDirect") == "on":
+                # In direct mode, recipientEmail is required to be in the JSON
                 settings["recipientEmail"]["checkbox_value"] = "on"
+                settings["recipientEmail"]["disabled"] = True
+            else:
+                settings["recipientEmail"]["disabled"] = False
                 
         # 3. Synchronize payload construction and save
         self._sync_and_rebuild()
@@ -279,12 +282,12 @@ class MainController:
             "error": ft.colors.RED_700,
             "success": ft.colors.GREEN_700,
             "warning": ft.colors.ORANGE_700,
-            "info": ft.colors.BLUE_700,
+            "info": "#90CAF9",
         }
         
         self.page.snack_bar = ft.SnackBar(
             content=ft.Text(message, color=ft.colors.WHITE),
-            bgcolor=color_map.get(level, ft.colors.BLUE_700),
+            bgcolor=color_map.get(level, "#90CAF9"),
             action="OK",
         )
         self.page.snack_bar.open = True

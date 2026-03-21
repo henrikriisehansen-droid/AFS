@@ -11,7 +11,7 @@ class FletMenuView(ft.UserControl):
             label="AFS email:",
             hint_text="AFS email",
             border_color="#30363D",
-            focused_border_color="#58A6FF",
+            focused_border_color="#90CAF9",
             on_change=lambda _: self.controller.on_input_changed()
         )
         
@@ -23,7 +23,7 @@ class FletMenuView(ft.UserControl):
                 ft.dropdown.Option("Service & Product Review(add/update Product Review)"),
             ],
             border_color="#30363D",
-            focused_border_color="#58A6FF",
+            focused_border_color="#90CAF9",
             on_change=lambda _: self.controller.on_input_changed(),
             text_size=12,
         )
@@ -37,8 +37,9 @@ class FletMenuView(ft.UserControl):
             icon=ft.icons.CODE,
             on_click=lambda _: self.controller.open_validate_json(),
             style=ft.ButtonStyle(
-                color="#FFFFFF",
-                bgcolor="#1F6FEB", # GitHub primary blue
+                color=ft.colors.PRIMARY,
+                bgcolor=ft.colors.TRANSPARENT,
+                side=ft.BorderSide(1, "#30363D"),
                 shape=ft.RoundedRectangleBorder(radius=6),
             )
         )
@@ -47,7 +48,7 @@ class FletMenuView(ft.UserControl):
             icon=ft.icons.SETTINGS,
             on_click=lambda _: self.controller.open_settings(),
             style=ft.ButtonStyle(
-                color="#58A6FF",
+                color="#90CAF9",
                 bgcolor=ft.colors.TRANSPARENT,
                 side=ft.BorderSide(1, "#30363D"),
                 shape=ft.RoundedRectangleBorder(radius=6),
@@ -69,7 +70,7 @@ class FletMenuView(ft.UserControl):
             controls=[
                 ft.Column(
                     controls=[
-                        ft.Text("Email Settings", size=24, weight=ft.FontWeight.BOLD, color="#58A6FF"),
+                        ft.Text("Email Settings", size=24, weight=ft.FontWeight.BOLD, color=ft.colors.PRIMARY),
                         self.afs_email_entry,
                         self.combobox,
                         ft.Divider(height=20, color=ft.colors.TRANSPARENT),
@@ -115,7 +116,7 @@ class FletMenuView(ft.UserControl):
         
         if config_data.get("sendAfsDirect") == "on":
             self.to_label.value = f"To: {config_data.get('afs_email', '')}"
-            self.to_label.color = ft.colors.BLUE_400
+            self.to_label.color = ft.colors.PRIMARY
             self.bcc_label.visible = False
         else:
             recipient = settings_data.get('recipientEmail', {}).get('value', '...')

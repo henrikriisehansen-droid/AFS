@@ -32,15 +32,16 @@ class FletValidateJsonWindow:
             icon=ft.icons.CHECK_CIRCLE,
             on_click=lambda _: self.perform_validation(),
             style=ft.ButtonStyle(
-                color="#FFFFFF",
-                bgcolor="#1F6FEB", # GitHub primary blue
+                color=ft.colors.PRIMARY,
+                bgcolor=ft.colors.TRANSPARENT,
+                side=ft.BorderSide(1, "#30363D"),
                 shape=ft.RoundedRectangleBorder(radius=6),
             ),
             width=500, # Fill left column width
         )
 
         self.dialog = ft.AlertDialog(
-            title=ft.Text("Validate JSON", color="#58A6FF", weight=ft.FontWeight.BOLD),
+            title=ft.Text("Validate JSON", color=ft.colors.PRIMARY, weight=ft.FontWeight.BOLD),
             bgcolor="#0D1117",
             content=ft.Container(
                 content=ft.Row(
@@ -86,7 +87,7 @@ class FletValidateJsonWindow:
                 height=600,
             ),
             actions=[
-                ft.TextButton("Close", on_click=lambda _: self.controller.close_validate_json(), style=ft.ButtonStyle(color="#58A6FF")),
+                ft.TextButton("Close", on_click=lambda _: self.controller.close_validate_json(), style=ft.ButtonStyle(color=ft.colors.PRIMARY)),
             ],
             actions_alignment=ft.MainAxisAlignment.END,
         )

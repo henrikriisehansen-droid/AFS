@@ -20,7 +20,7 @@ class FletEmailView(ft.UserControl):
     def build(self):
         return ft.Column(
             controls=[
-                ft.Text("Payload Preview", size=24, weight=ft.FontWeight.BOLD, color="#58A6FF"),
+                ft.Text("Payload Preview", size=24, weight=ft.FontWeight.BOLD, color=ft.colors.PRIMARY),
                 ft.Container(
                     content=self.email_body,
                     border=ft.border.all(1, "#30363D"),
