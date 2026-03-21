@@ -4,3 +4,4 @@ darkdetect==0.8.0
 jsonschema==4.26.0
 python-dotenv==1.2.2
 toml==0.10.2
+flet==0.21.2

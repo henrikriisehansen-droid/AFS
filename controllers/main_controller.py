@@ -1,25 +1,25 @@
 import random
 import string
 import json
+import flet as ft
 
 from models.config_manager import ConfigManager
 from models.payload_builder import PayloadBuilder, generate_html_payload, parse_invitation_type
 from models.email_service import EmailService
 
-from views.main_view import MainView
-from views.settings_window import SettingsWindow
-from views.validate_json_window import ValidateJsonWindow
-from views.notification_popup import show_notification
+from views.flet_view import FletView
+import threading
 
 class MainController:
-    def __init__(self):
+    def __init__(self, page: ft.Page):
+        self.page = page
         # 1. Initialize Model layer
         self.config_manager = ConfigManager()
         
         # 2. Initialize View layer
-        self.main_view = MainView(self, self.config_manager)
+        self.main_view = FletView(self.page, self, self.config_manager)
         
-        # Transient sub-windows
+        # Transient sub-views (repurposed for Flet as Dialogs/Views)
         self.settings_window = None
         self.validate_json_window = None
         
@@ -31,21 +31,22 @@ class MainController:
         self._sync_and_rebuild()
 
     def run(self):
-        self.main_view.mainloop()
+        # In Flet, the "run" logic is handled by flet.app(target=...)
+        # We just need to add the view to the page.
+        self.page.add(self.main_view)
+        # Ensure the main view takes up all available space
+        self.main_view.expand = True
+        self.page.update()
 
     def on_closing(self):
         """Handle clean application shutdown."""
         # 1. Cancel any pending saves
         if hasattr(self, '_save_timer') and self._save_timer:
-            try:
-                self.main_view.after_cancel(self._save_timer)
-            except Exception:
-                pass
+            self._save_timer.cancel()
             self._save_timer = None
 
         # 2. Ensure latest UI state is pulled into the model and saved SYNC
         try:
-            # Manually pull state to avoid triggering more 'after' calls
             data = self.config_manager.get_config()
             
             # Pull from Menu View
@@ -64,17 +65,7 @@ class MainController:
         except Exception as e:
             print(f"Error during final save: {e}")
 
-        # 3. Graceful Tkinter shutdown
-        # quit() stops the mainloop, destroy() kills the widgets
-        self.main_view.quit()
-        self.main_view.destroy()
-        
-        # Use os._exit to force-kill any lingering threads if necessary, 
-        # but sys.exit is usually safer for cleanup.
-        # However, for intermittent crashes on exit, sometimes os._exit is more reliable.
-        # Let's try sys.exit first.
-        import sys
-        sys.exit(0)
+        self.page.window_close()
 
     # --- Controller Actions (Triggered by Views) ---
 
@@ -167,11 +158,12 @@ class MainController:
         
         data.setdefault("payload", {})["html"] = html_content
         
-        # Debounced save to disk (avoids excessive writes on rapid typing)
+        # Debounced save to disk using threading.Timer
         if hasattr(self, '_save_timer') and self._save_timer:
-            self.main_view.after_cancel(self._save_timer)
+            self._save_timer.cancel()
         
-        self._save_timer = self.main_view.after(500, lambda: self.config_manager.save_config(data))
+        self._save_timer = threading.Timer(0.5, lambda: self.config_manager.save_config(data))
+        self._save_timer.start()
         
         # Update View to reflect new model state
         self.main_view.update_components(data)
@@ -180,21 +172,30 @@ class MainController:
     # --- Settings Window ---
 
     def open_settings(self):
+        # In Flet, we could use an AlertDialog or a new View
+        # For simplicity, let's use an AlertDialog with the settings content
+        from views.flet_settings_window import FletSettingsWindow
         if not self.settings_window:
             data = self.config_manager.get_config()
-            self.settings_window = SettingsWindow(self.main_view, self, data.get("config", {}), data.get("settings", {}))
-        else:
-            self.settings_window.focus()
+            self.settings_window = FletSettingsWindow(self.page, self, data.get("config", {}), data.get("settings", {}))
+        
+        self.page.dialog = self.settings_window.get_dialog()
+        self.page.dialog.open = True
+        self.page.update()
 
     def close_settings(self):
-        self.settings_window = None
         self.on_input_changed()
+        self.settings_window = None
+        if self.page.dialog:
+            self.page.dialog.open = False
+        self.page.update()
 
     # --- JSON Validator Window ---
 
     def open_validate_json(self):
+        from views.flet_validate_json_window import FletValidateJsonWindow
         if not self.validate_json_window:
-            self.validate_json_window = ValidateJsonWindow(self.main_view, self)
+            self.validate_json_window = FletValidateJsonWindow(self.page, self)
             html_content = self.main_view.email_view.get_content()
             
             # Extract actual JSON from the commented HTML script block
@@ -205,11 +206,16 @@ class MainController:
                     json_str = parts[1].split("</script>")[0].strip()
             
             self.validate_json_window.set_json_content(json_str)
-        else:
-            self.validate_json_window.focus()
+        
+        self.page.dialog = self.validate_json_window.get_dialog()
+        self.page.dialog.open = True
+        self.page.update()
 
     def close_validate_json(self):
         self.validate_json_window = None
+        if self.page.dialog:
+            self.page.dialog.open = False
+        self.page.update()
 
     # --- Email Execution ---
 
@@ -235,8 +241,7 @@ class MainController:
                 missing.append("Recipient Email (enable it in the settings panel)")
 
         if missing:
-            show_notification(
-                self.main_view,
+            self.show_notification(
                 "Cannot send email. The following required values are missing or empty:\n\n• " + "\n• ".join(missing),
                 level="warning"
             )
@@ -250,10 +255,26 @@ class MainController:
         success = email_service.send_email()
 
         if success:
-            show_notification(self.main_view, "Email sent successfully!", level="success")
+            self.show_notification("Email sent successfully!", level="success")
         else:
-            show_notification(
-                self.main_view,
+            self.show_notification(
                 "Failed to send the email.\nCheck your AgentMail API Key and Inbox ID in Settings, and review the console for details.",
                 level="error"
             )
+
+    def show_notification(self, message: str, level: str = "info"):
+        """Show a Flet-native notification using SnackBar."""
+        color_map = {
+            "error": ft.colors.RED_700,
+            "success": ft.colors.GREEN_700,
+            "warning": ft.colors.ORANGE_700,
+            "info": ft.colors.BLUE_700,
+        }
+        
+        self.page.snack_bar = ft.SnackBar(
+            content=ft.Text(message, color=ft.colors.WHITE),
+            bgcolor=color_map.get(level, ft.colors.BLUE_700),
+            action="OK",
+        )
+        self.page.snack_bar.open = True
+        self.page.update()

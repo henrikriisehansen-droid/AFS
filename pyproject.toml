@@ -13,4 +13,5 @@ dependencies = [
     "pyinstaller>=6.19.0",
     "python-dotenv==1.2.2",
     "toml==0.10.2",
+    "flet==0.21.2",
 ]
