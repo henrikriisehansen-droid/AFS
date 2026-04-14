@@ -99,6 +99,8 @@ class MainController:
             config["agentmail_inbox_id"] = sw_state["agentmail_inbox_id"]
             config["sendAfsDirect"] = sw_state["sendAfsDirect"]
             config["randomReferenceNumber"] = sw_state["randomReferenceNumber"]
+            config["randomProducts"] = sw_state["randomProducts"]
+            config["randomProductsCount"] = sw_state["randomProductsCount"]
 
         # 2. Business Logic Execution
         
@@ -160,7 +162,8 @@ class MainController:
             payload_type=payload_type,
             templates=data.get("templates", {}),
             product_templates=data.get("productTemplates", {}),
-            settings=data.get("settings", {})
+            settings=data.get("settings", {}),
+            config=data.get("config", {}),
         )
         
         payload_dict = builder.build()

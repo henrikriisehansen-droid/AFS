@@ -9,14 +9,31 @@ class PayloadType(Enum):
     SERVICE_AND_PRODUCT_REVIEW = "serviceAndProductReview"
     SERVICE_AND_PRODUCT_REVIEW_SKU = "serviceAndProductReviewWithFollowUp"
 
+RANDOM_PRODUCT_NAMES = [
+    "Wireless Bluetooth Headphones", "Organic Cotton T-Shirt", "Stainless Steel Water Bottle",
+    "LED Desk Lamp", "Bamboo Cutting Board", "Yoga Mat Pro", "Ceramic Coffee Mug",
+    "Leather Wallet", "Running Shoes", "Portable Phone Charger", "Cast Iron Skillet",
+    "Noise Cancelling Earbuds", "Canvas Backpack", "Smart Watch Band", "Glass Food Container",
+    "Memory Foam Pillow", "Electric Toothbrush", "Silicone Baking Mat", "Titanium Sunglasses",
+    "Wool Beanie Hat", "Insulated Lunch Bag", "Digital Kitchen Scale", "Hiking Boots",
+    "Plant-Based Protein Bar", "Reusable Shopping Bag", "Aromatherapy Diffuser",
+    "Mechanical Keyboard", "Cotton Bed Sheets", "Travel Neck Pillow", "Stainless Steel Tumbler",
+]
+
+RANDOM_BRANDS = [
+    "Acme", "NovaTech", "EcoLine", "PrimeCraft", "ZenWare", "UrbanEdge",
+    "SkyBound", "PureForm", "VoltAge", "TerraGoods", "AquaFlow", "SilkPath",
+]
+
 class PayloadBuilder:
     """Builds the payload using a clean dictionary approach."""
 
-    def __init__(self, payload_type: PayloadType, templates: dict, product_templates: dict, settings: dict):
+    def __init__(self, payload_type: PayloadType, templates: dict, product_templates: dict, settings: dict, config: dict = None):
         self.payload_type = payload_type
         self.templates = templates
         self.product_templates = product_templates
         self.settings = settings
+        self.config = config or {}
 
     def build(self) -> dict:
         """Constructs the final payload dictionary directly based on type."""
@@ -57,6 +74,10 @@ class PayloadBuilder:
         return base_payload
 
     def _build_product_payload(self) -> dict:
+        # Check if random product generation is enabled
+        if self.config.get("randomProducts") == "on":
+            return self._build_random_products()
+
         s = self.settings
         product = {}
         
@@ -74,6 +95,39 @@ class PayloadBuilder:
                     product[payload_key] = val
                     
         return {"products": [product]} if product else {}
+
+    def _build_random_products(self) -> dict:
+        """Generate N random products for the payload."""
+        try:
+            count = int(self.config.get("randomProductsCount", "3"))
+        except (ValueError, TypeError):
+            count = 3
+        count = max(1, min(count, 50))  # Clamp between 1-50
+
+        products = []
+        used_names = set()
+
+        for i in range(count):
+            # Pick a unique-ish product name
+            name = random.choice(RANDOM_PRODUCT_NAMES)
+            while name in used_names and len(used_names) < len(RANDOM_PRODUCT_NAMES):
+                name = random.choice(RANDOM_PRODUCT_NAMES)
+            used_names.add(name)
+
+            sku = ''.join(random.choices(string.ascii_uppercase, k=3)) + "-" + ''.join(random.choices(string.digits, k=4))
+            product_id = ''.join(random.choices(string.digits, k=5))
+            brand = random.choice(RANDOM_BRANDS)
+
+            product = {
+                "productUrl": f"http://www.mycompanystore.com/products/{product_id}.html",
+                "imageUrl": f"http://www.mycompanystore.com/products/images/{product_id}.jpg",
+                "name": name,
+                "sku": sku,
+                "brand": brand,
+            }
+            products.append(product)
+
+        return {"products": products} if products else {}
 
     def _build_product_sku_payload(self) -> dict:
         skus_str = self.settings.get("productSkus", {}).get("value", "")
